@@ -52,6 +52,11 @@
             border-radius: 8px;
         }
 
+        #stats {
+            margin-top: 20px;
+            text-align: center;
+            color: white;
+        }
     </style>
 </head>
 
@@ -66,6 +71,12 @@
         <input id="input" autocomplete="off" placeholder="Digite sua mensagem...">
         <button type="submit">Enviar</button>
     </form>
+
+    <div id="stats">
+        <p>Clientes Conectados: <span id="totalClients">0</span></p>
+        <p>Quantidade de Mensagens: <span id="messageCount">0</span></p>
+        <p>Tempo Ativo do Servidor: <span id="uptime">0h 0m 0s</span></p>
+    </div>
 
     <script src="/socket.io/socket.io.js"></script>
 
@@ -90,6 +101,13 @@
             const li = document.createElement('li');  // Cria um novo item de lista
             li.textContent = msg;  // Define o conteúdo do item de lista
             messageList.appendChild(li);  // Adiciona o item à lista de mensagens
+        });
+
+        // Atualizando as estatísticas
+        socket.on('updateStats', (stats) => {
+            document.getElementById('totalClients').textContent = stats.totalClients;
+            document.getElementById('messageCount').textContent = stats.messageCount;
+            document.getElementById('uptime').textContent = stats.uptime;
         });
     </script>
 </body>
