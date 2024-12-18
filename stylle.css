@@ -1,0 +1,64 @@
+body {
+    font-family: Arial, sans-serif; 
+    margin: 0; 
+    padding: 0; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    height: 100vh; 
+    background-color: #004badda;
+}
+
+button {
+    margin-left: 10px; 
+    padding: 15px;
+    cursor:pointer;
+    background-color: white; 
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    transition: background-color 0.3s ease; 
+    
+ }
+
+ button:hover, button:active {
+    background-color: lightgray; 
+}
+
+
+
+input{
+    width: 80%;
+    padding: 10px;
+}
+
+#log{
+    width: 80%; 
+    height: 50vh; 
+    overflow-y: auto; 
+    border: 1px solid #ccc; 
+    margin-bottom: 10px; 
+    padding: 10px; 
+    background: #fff; 
+}
+  
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
