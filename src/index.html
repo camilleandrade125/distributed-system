@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/src/logo.system.png" type="image/x-icon">
+    <title>System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            background-color: #004badda;
+        }
+
+        button {
+            margin-left: 10px; 
+            padding: 15px;
+            margin: 10px;
+            cursor: pointer;
+            background-color: white; 
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover, button:active {
+            background-color: lightgray; 
+        }
+
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-right: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+
+        #log {
+            width: 80%; 
+            height: 50vh; 
+            overflow-y: auto; 
+            border: 1px solid #ccc; 
+            margin-bottom: 10px; 
+            padding: 10px; 
+            background: #fff; 
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div id="log">
+        <ul id="messages">
+            <!-- As mensagens aparecerão aqui -->
+        </ul>
+    </div>
+
+    <form id="form">
+        <input id="input" autocomplete="off" placeholder="Digite sua mensagem...">
+        <button type="submit">Enviar</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+        var socket = io();  // Conecta-se ao servidor WebSocket
+        const messageList = document.getElementById('messages');  // Lista de mensagens
+        const inputMessage = document.getElementById('input');    // Campo de entrada da mensagem
+
+        // Escutando o evento de envio do formulário
+        document.getElementById('form').addEventListener('submit', (e) => {
+            e.preventDefault();  // Impede o envio padrão do formulário (recarregar a página)
+
+            const messageText = inputMessage.value.trim();  // Obtém o texto da mensagem
+            if (messageText) {
+                socket.emit('message', messageText);  // Emite a mensagem para o servidor
+                inputMessage.value = '';  // Limpa o campo de entrada
+            }
+        });
+
+        // Quando o servidor enviar uma mensagem de volta
+        socket.on('message', (msg) => {
+            const li = document.createElement('li');  // Cria um novo item de lista
+            li.textContent = msg;  // Define o conteúdo do item de lista
+            messageList.appendChild(li);  // Adiciona o item à lista de mensagens
+        });
+    </script>
+</body>
+</html>

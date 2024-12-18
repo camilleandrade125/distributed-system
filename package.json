@@ -1,0 +1,22 @@
+{
+  "name": "distributed-system",
+  "version": "1.0.0",
+  "description": "Este repositório foi criado com o objetivo de desenvolver um sistema distribuído, conforme solicitado pelo professor. O projeto visa implementar conceitos fundamentais de sistemas distribuídos, como comunicação entre processos, sincronização e tolerância a falhas, promovendo o aprendizado prático e colaborativo.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "socket.io": "^4.8.1"
+  }
+}
