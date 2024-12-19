@@ -1,5 +1,6 @@
 import express, { Application } from 'express';
 import http from 'http';
+import { uptime } from 'process';
 import { Server } from 'socket.io';
 
 class App {
@@ -63,10 +64,19 @@ class App {
                 // Emitir a resposta
                 this.io.emit('message', response);
 
+                const formatUptime = (startTime: Date)=>{
+                    const diff = Math.floor((Date.now() - startTime.getTime()) / 1000)
+                    const hour = Math.floor(diff / 3600)
+                    const minutes = Math.floor((diff % 3600) / 60)
+                    const seconds = diff % 60
+                    return `${hour}h ${minutes}m ${seconds}s`
+                }
+
                 // Atualizando as estatísticas
                 this.io.emit('updateStats', {
                     totalClients: this.totalClientes,
-                    messageCount: this.quantidadeMensagens
+                    messageCount: this.quantidadeMensagens,
+                    uptime: formatUptime(this.tempoAtivoServer),
                 });
             });
 
