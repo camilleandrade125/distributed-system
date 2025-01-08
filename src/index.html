@@ -7,100 +7,133 @@
     <title>System</title>
     <style>
         body {
-            font-family: Arial, sans-serif; 
-            margin: 0; 
-            padding: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            height: 100vh; 
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
             background-color: #004badda;
         }
-
         button {
-            margin-left: 10px; 
+            margin-left: 10px;
             padding: 15px;
             margin: 10px;
             cursor: pointer;
-            background-color: white; 
+            background-color: white;
             border: 1px solid #ccc;
             border-radius: 8px;
             transition: background-color 0.3s ease;
         }
-
         button:hover, button:active {
-            background-color: lightgray; 
+            background-color: lightgray;
         }
-
         input {
             width: 80%;
-            padding: 10px;
+            padding: 15px;
             margin-right: 10px;
             border: 1px solid #ccc;
             border-radius: 8px;
+            margin: 10px;
         }
-
         #log {
-            width: 80%; 
-            height: 50vh; 
-            overflow-y: auto; 
-            border: 1px solid #ccc; 
-            margin-bottom: 10px; 
-            padding: 10px; 
-            background: #fff; 
+            width: 80%;
+            height: 50vh;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #fff;
             border-radius: 8px;
         }
-
         #stats {
             margin-top: 20px;
             text-align: center;
             color: white;
         }
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+        #messages li {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        #messages li:last-child {
+            border-bottom: none;
+        }
+        .error-message {
+            color: red;
+            margin-top: 5px;
+            font-size: 14px;
+        }
     </style>
 </head>
-
 <body>
     <div id="log">
         <ul id="messages">
             <!-- As mensagens aparecerão aqui -->
         </ul>
     </div>
-
     <form id="form">
+        <input type="text" id="input_name" placeholder="Digite o seu nome: ">
         <input id="input" autocomplete="off" placeholder="Digite sua mensagem...">
         <button type="submit">Enviar</button>
     </form>
-
     <div id="stats">
         <p>Clientes Conectados: <span id="totalClients">0</span></p>
         <p>Quantidade de Mensagens: <span id="messageCount">0</span></p>
         <p>Tempo Ativo do Servidor: <span id="uptime">0h 0m 0s</span></p>
     </div>
-
     <script src="/socket.io/socket.io.js"></script>
-
     <script>
-        var socket = io();  // Conecta-se ao servidor WebSocket
-        const messageList = document.getElementById('messages');  // Lista de mensagens
-        const inputMessage = document.getElementById('input');    // Campo de entrada da mensagem
+        const socket = io();
+        const messageList = document.getElementById('messages');
+        const inputMessage = document.getElementById('input');
+        const inputName = document.getElementById('input_name');
+        const form = document.getElementById('form');
+
+        // Função para verificar se o nome foi preenchido
+        function validateName() {
+            const userName = inputName.value.trim();
+            if (!userName) {
+                alert('Por favor, digite seu nome antes de enviar mensagens.');
+                return false;
+            }
+            return true;
+        }
 
         // Escutando o evento de envio do formulário
-        document.getElementById('form').addEventListener('submit', (e) => {
-            e.preventDefault();  // Impede o envio padrão do formulário (recarregar a página)
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            if (!validateName()) {
+                return;
+            }
 
-            const messageText = inputMessage.value.trim();  // Obtém o texto da mensagem
+            const messageText = inputMessage.value.trim();
+            const userName = inputName.value.trim();
+
             if (messageText) {
-                socket.emit('message', messageText);  // Emite a mensagem para o servidor
-                inputMessage.value = '';  // Limpa o campo de entrada
+                // Envia o nome do usuário junto com a mensagem
+                socket.emit('message', {
+                    userName: userName,
+                    message: messageText
+                });
+                inputMessage.value = '';
             }
         });
 
         // Quando o servidor enviar uma mensagem de volta
         socket.on('message', (msg) => {
-            const li = document.createElement('li');  // Cria um novo item de lista
-            li.textContent = msg;  // Define o conteúdo do item de lista
-            messageList.appendChild(li);  // Adiciona o item à lista de mensagens
+            const li = document.createElement('li');
+            li.textContent = msg;
+            messageList.appendChild(li);
+            // Auto-scroll para a última mensagem
+            messageList.scrollTop = messageList.scrollHeight;
         });
 
         // Atualizando as estatísticas
@@ -108,6 +141,13 @@
             document.getElementById('totalClients').textContent = stats.totalClients;
             document.getElementById('messageCount').textContent = stats.messageCount;
             document.getElementById('uptime').textContent = stats.uptime;
+        });
+
+        // Desabilitar edição do nome após primeira mensagem
+        inputMessage.addEventListener('focus', () => {
+            if (messageList.children.length > 0) {
+                inputName.readOnly = true;
+            }
         });
     </script>
 </body>

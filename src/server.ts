@@ -1,14 +1,17 @@
+// server.ts
 import express, { Application } from 'express';
 import http from 'http';
-import { uptime } from 'process';
 import { Server } from 'socket.io';
+
+interface MessageData {
+    userName: string;
+    message: string;
+}
 
 class App {
     private app: Application;
     private http: http.Server;
     private io: Server;
-
-    // Propriedades para estatísticas
     private totalClientes: number;
     private quantidadeMensagens: number;
     private tempoAtivoServer: Date;
@@ -16,13 +19,17 @@ class App {
     constructor() {
         this.app = express();
         this.http = http.createServer(this.app);
-        this.io = new Server(this.http);
-
-        // Inicialização das estatísticas
+        this.io = new Server(this.http, {
+            cors: {
+                origin: "*",
+                methods: ["GET", "POST"]
+            }
+        });
+        
         this.totalClientes = 0;
         this.quantidadeMensagens = 0;
         this.tempoAtivoServer = new Date();
-
+        
         this.listenSocket();
         this.setupRoutes();
     }
@@ -35,57 +42,56 @@ class App {
         this.io.on('connection', (socket) => {
             this.totalClientes++;
             console.log('User connect =>', socket.id);
-            console.log(`Total de clientes conectados: ${this.totalClientes}`);
-
-            socket.on('message', (msg) => {
+            
+            socket.on('message', (data: MessageData) => {
                 this.quantidadeMensagens++;
-                console.log(`Mensagem recebida: ${msg}`);
+                console.log(`Mensagem recebida de ${data.userName}: ${data.message}`);
+                
+                const message = data.message.trim();
+                let response: string;
 
-                const message = msg.trim();
-                let response: string = 'Comando inválido.';
-
-                // Inverter texto
+                // Processamento dos comandos
                 if (message.startsWith('invert ')) {
                     const inverterTexto = message.replace('invert ', '');
-                    response = `Comando inverter: ${inverterTexto.split('').reverse().join('')}`;
+                    response = `${data.userName}: Texto invertido: ${inverterTexto.split('').reverse().join('')}`;
                 }
-                // Contar caracteres
                 else if (message.startsWith('count ')) {
                     const contarTexto = message.replace('count ', '');
-                    response = `Comando contar: ${contarTexto.length}`;
+                    response = `${data.userName}: Quantidade de caracteres: ${contarTexto.length}`;
                 }
-                // Somar números
                 else if (/^\d+(\s+\d+)*$/.test(message)) {
                     const numeros = message.split(' ').map(Number);
                     const soma = numeros.reduce((acc, num) => acc + num, 0);
-                    response = `Comando somar: ${soma}`;
+                    response = `${data.userName}: Soma dos números: ${soma}`;
+                }
+                else {
+                    response = `${data.userName}: ${message}`;
                 }
 
-                // Emitir a resposta
+                // Emite a mensagem para todos os clientes
                 this.io.emit('message', response);
-
-                const formatUptime = (startTime: Date)=>{
-                    const diff = Math.floor((Date.now() - startTime.getTime()) / 1000)
-                    const hour = Math.floor(diff / 3600)
-                    const minutes = Math.floor((diff % 3600) / 60)
-                    const seconds = diff % 60
-                    return `${hour}h ${minutes}m ${seconds}s`
-                }
-
-                // Atualizando as estatísticas
+                
+                // Atualiza estatísticas
                 this.io.emit('updateStats', {
                     totalClients: this.totalClientes,
                     messageCount: this.quantidadeMensagens,
-                    uptime: formatUptime(this.tempoAtivoServer),
+                    uptime: this.formatUptime(this.tempoAtivoServer),
                 });
             });
 
             socket.on('disconnect', () => {
                 this.totalClientes--;
                 console.log(`User disconnected => ${socket.id}`);
-                console.log(`Total de clientes conectados: ${this.totalClientes}`);
             });
         });
+    }
+
+    private formatUptime(startTime: Date): string {
+        const diff = Math.floor((Date.now() - startTime.getTime()) / 1000);
+        const hour = Math.floor(diff / 3600);
+        const minutes = Math.floor((diff % 3600) / 60);
+        const seconds = diff % 60;
+        return `${hour}h ${minutes}m ${seconds}s`;
     }
 
     setupRoutes() {
